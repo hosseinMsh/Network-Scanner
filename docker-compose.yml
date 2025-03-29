@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: celery -A network_scanner worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+
+  celery-beat:
+    build: .
+    command: celery -A network_scanner beat -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+

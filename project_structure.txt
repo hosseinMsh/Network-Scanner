@@ -1,0 +1,58 @@
+network_scanner/
+├── manage.py
+├── network_scanner/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+├── accounts/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+├── dashboard/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+├── scanner/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py
+│   ├── urls.py
+│   ├── views.py
+│   └── services/
+│       ├── __init__.py
+│       ├── port_scanner.py
+│       ├── ssl_checker.py
+│       ├── domain_scanner.py
+│       └── app_scanner.py
+├── reports/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+└── templates/
+    ├── base.html
+    ├── dashboard/
+    │   ├── index.html
+    │   └── components/
+    ├── scanner/
+    │   ├── scan_form.html
+    │   └── scan_results.html
+    └── reports/
+        ├── report_list.html
+        └── report_detail.html
+

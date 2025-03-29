@@ -1,0 +1,193 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}Domain Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Domain Details</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scanner:domain_list' %}">Domains</a></li>
+        <li class="breadcrumb-item active">{{ domain.name }}</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-globe me-1"></i>
+                    Domain Information
+                    <div class="float-end">
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="actionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="actionDropdown">
+                            <li><a class="dropdown-item" href="{% url 'scanner:scan_domain' domain.id %}">Scan Domain</a></li>
+                            <li><a class="dropdown-item" href="{% url 'scanner:domain_report' domain.id %}">Generate Report</a></li>
+                            <li><a class="dropdown-item" href="{% url 'scanner:detect_domain_technology' domain.id %}">Detect Technology</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'scanner:domain_update' domain.id %}">Edit Domain</a></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'scanner:domain_delete' domain.id %}">Delete Domain</a></li>
+                        </ul>
+                    </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Basic Information</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ domain.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Description</th>
+                                    <td>{{ domain.description|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <td>{{ domain.ip_address|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>
+                                        {% if domain.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td>{{ domain.created_at }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated</th>
+                                    <td>{{ domain.updated_at }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>SSL Information</h5>
+                            {% if domain.ssl_info %}
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Issued To</th>
+                                    <td>{{ domain.ssl_info.issued_to|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Issued By</th>
+                                    <td>{{ domain.ssl_info.issued_by|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Valid From</th>
+                                    <td>{{ domain.ssl_info.valid_from|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Valid Until</th>
+                                    <td>{{ domain.ssl_info.valid_until|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>
+                                        {% if domain.ssl_info.is_valid %}
+                                        <span class="badge bg-success">Valid</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Invalid</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                            {% else %}
+                            <div class="alert alert-info">
+                                No SSL information available. Run a scan to collect SSL data.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h5>Detected Technologies</h5>
+                            {% if domain.metadata and domain.metadata.detected_technologies %}
+                            <div class="row">
+                                {% for category, techs in domain.metadata.detected_technologies.items %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">{{ category|title }}</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for tech in techs %}
+                                                <li class="list-group-item">{{ tech }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                No technology information available. Click "Detect Technology" to analyze this domain.
+                            </div>
+                            {% endif %}
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'scanner:detect_technologies' domain.id %}" class="btn btn-primary">
+                                    <i class="fas fa-code me-2"></i>Detect Technologies
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h5>Open Ports</h5>
+                            {% if domain.open_ports.all %}
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Port</th>
+                                        <th>Service</th>
+                                        <th>Protocol</th>
+                                        <th>Status</th>
+                                        <th>Last Scanned</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for port in domain.open_ports.all %}
+                                    <tr>
+                                        <td>{{ port.port_number }}</td>
+                                        <td>{{ port.service_name|default:"Unknown" }}</td>
+                                        <td>{{ port.protocol|upper }}</td>
+                                        <td>
+                                            {% if port.is_open %}
+                                            <span class="badge bg-success">Open</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Closed</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ port.last_scanned|default:"Never" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <div class="alert alert-info">
+                                No open ports found. Run a scan to detect open ports.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

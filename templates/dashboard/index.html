@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Network Scanner{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-4">Dashboard</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Networks</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ networks_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-network-wired fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Servers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ servers_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-server fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Domains</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ domains_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-globe fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Applications</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ applications_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-code fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Vulnerability Chart -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Vulnerabilities by Severity</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="vulnerabilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OS Distribution Chart -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Servers by Operating System</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="osChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Vulnerable Servers -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Vulnerable Servers</h6>
+                </div>
+                <div class="card-body">
+                    {% if vulnerable_servers %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Server</th>
+                                    <th>IP Address</th>
+                                    <th>Vulnerabilities</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for server in vulnerable_servers %}
+                                <tr>
+                                    <td>{{ server.name }}</td>
+                                    <td>{{ server.ip_address }}</td>
+                                    <td>{{ server.vuln_count }}</td>
+                                    <td>
+                                        <a href="{% url 'scanner:server_detail' server.id %}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No vulnerable servers found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Expiring SSL Certificates -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Expiring SSL Certificates</h6>
+                </div>
+                <div class="card-body">
+                    {% if expiring_certs %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Domain</th>
+                                    <th>Issuer</th>
+                                    <th>Expires</th>
+                                    <th>Days Left</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cert in expiring_certs %}
+                                <tr>
+                                    <td>{{ cert.domain.name }}</td>
+                                    <td>{{ cert.issuer }}</td>
+                                    <td>{{ cert.valid_until|date:"Y-m-d" }}</td>
+                                    <td>{{ cert.days_until_expiry }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No expiring SSL certificates found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Scans -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Port Scans</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_port_scans %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Server</th>
+                                    <th>IP Address</th>
+                                    <th>Scan Date</th>
+                                    <th>Port Range</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scan in recent_port_scans %}
+                                <tr>
+                                    <td>{{ scan.server.name }}</td>
+                                    <td>{{ scan.server.ip_address }}</td>
+                                    <td>{{ scan.scan_date }}</td>
+                                    <td>{{ scan.port_range }}</td>
+                                    <td>
+                                        <a href="{% url 'scanner:port_scan_results' scan.id %}" class="btn btn-sm btn-primary">View Results</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No recent port scans found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Vulnerability Chart
+    var vulnCtx = document.getElementById('vulnerabilityChart').getContext('2d');
+    var vulnChart = new Chart(vulnCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ vulnerability_data.labels|safe }},
+            datasets: [{
+                data: {{ vulnerability_data.data|safe }},
+                backgroundColor: [
+                    '#e74a3b', // Critical - Red
+                    '#f6c23e', // High - Yellow
+                    '#4e73df', // Medium - Blue
+                    '#36b9cc', // Low - Cyan
+                    '#1cc88a'  // Info - Green
+                ],
+                hoverBackgroundColor: [
+                    '#be3e31',
+                    '#dda20a',
+                    '#2e59d9',
+                    '#2c9faf',
+                    '#17a673'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            legend: {
+                display: true,
+                position: 'bottom'
+            },
+            cutoutPercentage: 70,
+        },
+    });
+
+    // OS Chart
+    var osCtx = document.getElementById('osChart').getContext('2d');
+    var osChart = new Chart(osCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ os_data.labels|safe }},
+            datasets: [{
+                data: {{ os_data.data|safe }},
+                backgroundColor: [
+                    '#4e73df', // Blue
+                    '#1cc88a', // Green
+                    '#36b9cc', // Cyan
+                    '#f6c23e', // Yellow
+                    '#e74a3b', // Red
+                    '#858796'  // Gray
+                ],
+                hoverBackgroundColor: [
+                    '#2e59d9',
+                    '#17a673',
+                    '#2c9faf',
+                    '#dda20a',
+                    '#be3e31',
+                    '#6e707e'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            legend: {
+                display: true,
+                position: 'bottom'
+            },
+            cutoutPercentage: 70,
+        },
+    });
+</script>
+{% endblock %}
+

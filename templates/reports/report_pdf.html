@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .header p {
+            color: #7f8c8d;
+            margin-top: 0;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            color: #2980b9;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: white;
+        }
+        .badge-success {
+            background-color: #27ae60;
+        }
+        .badge-danger {
+            background-color: #e74c3c;
+        }
+        .badge-warning {
+            background-color: #f39c12;
+            color: #333;
+        }
+        .badge-info {
+            background-color: #3498db;
+        }
+        .badge-secondary {
+            background-color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ report.title }}</h1>
+        <p>Generated on {{ content.generated_at|date:"F j, Y, g:i a" }}</p>
+    </div>
+    
+    {% if report.report_type == 'network' %}
+    <!-- Network Report -->
+    <div class="section">
+        <h2>Network Overview</h2>
+        <table>
+            <tr>
+                <th>Network Name</th>
+                <td>{{ content.network_name }}</td>
+            </tr>
+            <tr>
+                <th>IP Range</th>
+                <td>{{ content.ip_range }}</td>
+            </tr>
+            <tr>
+                <th>Server Count</th>
+                <td>{{ content.server_count }}</td>
+            </tr>
+            <tr>
+                <th>Domain Count</th>
+                <td>{{ content.domain_count }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>Vulnerability Summary</h2>
+        <table>
+            <tr>
+                <th>Severity</th>
+                <th>Count</th>
+            </tr>
+            <tr>
+                <td>Critical</td>
+                <td>{{ content.vulnerabilities.critical }}</td>
+            </tr>
+            <tr>
+                <td>High</td>
+                <td>{{ content.vulnerabilities.high }}</td>
+            </tr>
+            <tr>
+                <td>Medium</td>
+                <td>{{ content.vulnerabilities.medium }}</td>
+            </tr>
+            <tr>
+                <td>Low</td>
+                <td>{{ content.vulnerabilities.low }}</td>
+            </tr>
+            <tr>
+                <td>Info</td>
+                <td>{{ content.vulnerabilities.info }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>Servers</h2>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>IP Address</th>
+                <th>Operating System</th>
+                <th>Domains</th>
+                <th>Vulnerabilities</th>
+            </tr>
+            {% for server in content.servers %}
+            <tr>
+                <td>{{ server.name }}</td>
+                <td>{{ server.ip_address }}</td>
+                <td>{{ server.operating_system|default:"Unknown" }}</td>
+                <td>{{ server.domains|length }}</td>
+                <td>{{ server.vulnerabilities|length }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if report.report_type == 'server' %}
+    <!-- Server Report -->
+    <div class="section">
+        <h2>Server Overview</h2>
+        <table>
+            <tr>
+                <th>Server Name</th>
+                <td>{{ content.server_name }}</td>
+            </tr>
+            <tr>
+                <th>IP Address</th>
+                <td>{{ content.ip_address }}</td>
+            </tr>
+            <tr>
+                <th>Operating System</th>
+                <td>{{ content.operating_system|default:"Unknown" }}</td>
+            </tr>
+            <tr>
+                <th>CPU Cores</th>
+                <td>{{ content.cpu_cores|default:"Unknown" }}</td>
+            </tr>
+            <tr>
+                <th>RAM</th>
+                <td>{{ content.ram_gb|default:"Unknown" }} GB</td>
+            </tr>
+            <tr>
+                <th>Disk Space</th>
+                <td>{{ content.disk_space_gb|default:"Unknown" }} GB</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>Open Ports</h2>
+        {% if content.open_ports %}
+        <table>
+            <tr>
+                <th>Port</th>
+                <th>Protocol</th>
+                <th>Service</th>
+            </tr>
+            {% for port in content.open_ports %}
+            <tr>
+                <td>{{ port.port_number }}</td>
+                <td>{{ port.protocol }}</td>
+                <td>{{ port.service|default:"Unknown" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No open ports found.</p>
+        {% endif %}
+    </div>
+    
+    <div class="section">
+        <h2>Vulnerabilities</h2>
+        {% if content.vulnerabilities %}
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Severity</th>
+                <th>CVE ID</th>
+                <th>Status</th>
+            </tr>
+            {% for vuln in content.vulnerabilities %}
+            <tr>
+                <td>{{ vuln.title }}</td>
+                <td>{{ vuln.severity }}</td>
+                <td>{{ vuln.cve_id|default:"N/A" }}</td>
+                <td>{% if vuln.is_fixed %}Fixed{% else %}Open{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No vulnerabilities found.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% if report.report_type == 'domain' %}
+    <!-- Domain Report -->
+    <div class="section">
+        <h2>Domain Overview</h2>
+        <table>
+            <tr>
+                <th>Domain Name</th>
+                <td>{{ content.domain_name }}</td>
+            </tr>
+            <tr>
+                <th>Server</th>
+                <td>{{ content.server_name }} ({{ content.server_ip }})</td>
+            </tr>
+            <tr>
+                <th>Registrar</th>
+                <td>{{ content.registrar|default:"Unknown" }}</td>
+            </tr>
+            <tr>
+                <th>Registration Date</th>
+                <td>{{ content.registration_date|default:"Unknown" }}</td>
+            </tr>
+            <tr>
+                <th>Expiration Date</th>
+                <td>{{ content.expiration_date|default:"Unknown" }}</td>
+            </tr>
+            <tr>
+                <th>Technical Representative</th>
+                <td>{{ content.technical_representative|default:"Not specified" }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>SSL Certificates</h2>
+        {% if content.ssl_certificates %}
+        <table>
+            <tr>
+                <th>Issuer</th>
+                <th>Valid From</th>
+                <th>Valid Until</th>
+                <th>Status</th>
+                <th>Days Until Expiry</th>
+            </tr>
+            {% for cert in content.ssl_certificates %}
+            <tr>
+                <td>{{ cert.issuer }}</td>
+                <td>{{ cert.valid_from }}</td>
+                <td>{{ cert.valid_until }}</td>
+                <td>{% if cert.is_valid %}Valid{% else %}Invalid{% endif %}</td>
+                <td>{{ cert.days_until_expiry }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No SSL certificates found.</p>
+        {% endif %}
+    </div>
+    
+    <div class="section">
+        <h2>Applications</h2>
+        {% if content.applications %}
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Technology Type</th>
+                <th>Version</th>
+            </tr>
+            {% for app in content.applications %}
+            <tr>
+                <td>{{ app.name }}</td>
+                <td>{{ app.technology_type }}</td>
+                <td>{{ app.version|default:"Unknown" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No applications found.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>Generated by Network Scanner | {{ content.generated_at|date:"F j, Y, g:i a" }}</p>
+    </div>
+</body>
+</html>
+

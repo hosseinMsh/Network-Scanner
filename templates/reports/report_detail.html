@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Report: {{ report.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Report: {{ report.title }}</h1>
+        <div>
+            <a href="{% url 'reports:report_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'reports:export_report_pdf' report.id %}">Export as PDF</a></li>
+                    <li><a class="dropdown-item" href="{% url 'reports:export_report_csv' report.id %}">Export as CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Report Information</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Title:</strong> {{ report.title }}</p>
+                    <p><strong>Type:</strong> {{ report.get_report_type_display }}</p>
+                    <p><strong>Created By:</strong> {{ report.created_by.username }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Created At:</strong> {{ report.created_at }}</p>
+                    <p><strong>Updated At:</strong> {{ report.updated_at }}</p>
+                    {% if report.description %}
+                    <p><strong>Description:</strong> {{ report.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if report.report_type == 'network' %}
+    <!-- Network Report -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Network Overview</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Network Name:</strong> {{ content.network_name }}</p>
+                    <p><strong>IP Range:</strong> {{ content.ip_range }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Server Count:</strong> {{ content.server_count }}</p>
+                    <p><strong>Domain Count:</strong> {{ content.domain_count }}</p>
+                </div>
+            </div>
+            
+            <!-- Vulnerability Summary -->
+            <div class="mt-4">
+                <h5>Vulnerability Summary</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="vulnerabilityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Severity</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge bg-danger">Critical</span></td>
+                                        <td>{{ content.vulnerabilities.critical }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-warning text-dark">High</span></td>
+                                        <td>{{ content.vulnerabilities.high }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-primary">Medium</span></td>
+                                        <td>{{ content.vulnerabilities.medium }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-info">Low</span></td>
+                                        <td>{{ content.vulnerabilities.low }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-secondary">Info</span></td>
+                                        <td>{{ content.vulnerabilities.info }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Servers -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Servers</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>IP Address</th>
+                            <th>Operating System</th>
+                            <th>Domains</th>
+                            <th>Vulnerabilities</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for server in content.servers %}
+                        <tr>
+                            <td>{{ server.name }}</td>
+                            <td>{{ server.ip_address }}</td>
+                            <td>{{ server.operating_system|default:"Unknown" }}</td>
+                            <td>{{ server.domains|length }}</td>
+                            <td>{{ server.vulnerabilities|length }}</td>
+                            <td>
+                                <a href="{% url 'scanner:server_detail' server.id %}" class="btn btn-sm btn-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if report.report_type == 'server' %}
+    <!-- Server Report -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Server Overview</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Server Name:</strong> {{ content.server_name }}</p>
+                    <p><strong>IP Address:</strong> {{ content.ip_address }}</p>
+                    <p><strong>Operating System:</strong> {{ content.operating_system|default:"Unknown" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>CPU Cores:</strong> {{ content.cpu_cores|default:"Unknown" }}</p>
+                    <p><strong>RAM:</strong> {{ content.ram_gb|default:"Unknown" }} GB</p>
+                    <p><strong>Disk Space:</strong> {{ content.disk_space_gb|default:"Unknown" }} GB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Open Ports -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Open Ports</h6>
+        </div>
+        <div class="card-body">
+            {% if content.open_ports %}
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Port</th>
+                            <th>Protocol</th>
+                            <th>Service</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for port in content.open_ports %}
+                        <tr>
+                            <td>{{ port.port_number }}</td>
+                            <td>{{ port.protocol }}</td>
+                            <td>{{ port.service|default:"Unknown" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No open ports found.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Vulnerabilities -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Vulnerabilities</h6>
+        </div>
+        <div class="card-body">
+            {% if content.vulnerabilities %}
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Severity</th>
+                            <th>CVE ID</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vuln in content.vulnerabilities %}
+                        <tr>
+                            <td>{{ vuln.title }}</td>
+                            <td>
+                                {% if vuln.severity == 'critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                                {% elif vuln.severity == 'high' %}
+                                <span class="badge bg-warning text-dark">High</span>
+                                {% elif vuln.severity == 'medium' %}
+                                <span class="badge bg-primary">Medium</span>
+                                {% elif vuln.severity == 'low' %}
+                                <span class="badge bg-info">Low</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Info</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ vuln.cve_id|default:"N/A" }}</td>
+                            <td>
+                                {% if vuln.is_fixed %}
+                                <span class="badge bg-success">Fixed</span>
+                                {% else %}
+                                <span class="badge bg-danger">Open</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No vulnerabilities found.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if report.report_type == 'network' %}
+    // Vulnerability Chart
+    var vulnCtx = document.getElementById('vulnerabilityChart').getContext('2d');
+    var vulnChart = new Chart(vulnCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Critical', 'High', 'Medium', 'Low', 'Info'],
+            datasets: [{
+                data: [
+                    {{ content.vulnerabilities.critical }},
+                    {{ content.vulnerabilities.high }},
+                    {{ content.vulnerabilities.medium }},
+                    {{ content.vulnerabilities.low }},
+                    {{ content.vulnerabilities.info }}
+                ],
+                backgroundColor: [
+                    '#e74a3b', // Critical - Red
+                    '#f6c23e', // High - Yellow
+                    '#4e73df', // Medium - Blue
+                    '#36b9cc', // Low - Cyan
+                    '#1cc88a'  // Info - Green
+                ],
+                hoverBackgroundColor: [
+                    '#be3e31',
+                    '#dda20a',
+                    '#2e59d9',
+                    '#2c9faf',
+                    '#17a673'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            legend: {
+                display: true,
+                position: 'bottom'
+            },
+            cutoutPercentage: 70,
+        },
+    });
+    {% endif %}
+</script>
+{% endblock %}
+

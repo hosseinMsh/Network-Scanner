@@ -1,0 +1,103 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}
+{% if form.instance.id %}Edit Network{% else %}Add Network{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">{% if form.instance.id %}Edit Network{% else %}Add Network{% endif %}</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scanner:network_list' %}">Networks</a></li>
+        <li class="breadcrumb-item active">{% if form.instance.id %}Edit{% else %}Add{% endif %}</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-network-wired me-1"></i>
+                    Network Information
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> Please correct the errors below.
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Network Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.name.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Enter a descriptive name for this network.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.cidr.id_for_label }}" class="form-label">CIDR Notation</label>
+                            {{ form.cidr }}
+                            {% if form.cidr.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.cidr.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Enter the network in CIDR notation (e.g., 192.168.1.0/24).</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Provide a brief description of this network.</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+                            {% if form.is_active.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.is_active.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Check if this network is currently active and should be monitored.</div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save
+                            </button>
+                            <a href="{% url 'scanner:network_list' %}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Add Bootstrap classes to form fields
+        $('input[type="text"], input[type="number"], textarea, select').addClass('form-control');
+        $('input[type="checkbox"]').addClass('form-check-input');
+    });
+</script>
+{% endblock %}
+

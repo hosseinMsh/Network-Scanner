@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Domains - Network Scanner{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Domains</h1>
+        <a href="{% url 'scanner:domain_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Domain
+        </a>
+    </div>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Domains</h6>
+        </div>
+        <div class="card-body">
+            {% if domains %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Server</th>
+                            <th>Registrar</th>
+                            <th>Expiration Date</th>
+                            <th>SSL Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for domain in domains %}
+                        <tr>
+                            <td>{{ domain.name }}</td>
+                            <td><a href="{% url 'scanner:server_detail' domain.server.id %}">{{ domain.server.name }}</a></td>
+                            <td>{{ domain.registrar|default:"Unknown" }}</td>
+                            <td>{{ domain.expiration_date|default:"Unknown" }}</td>
+                            <td>
+                                {% if domain.ssl_certificates.exists %}
+                                {% with cert=domain.ssl_certificates.first %}
+                                {% if cert.is_valid %}
+                                <span class="badge bg-success">Valid</span>
+                                {% else %}
+                                <span class="badge bg-danger">Invalid</span>
+                                {% endif %}
+                                {% endwith %}
+                                {% else %}
+                                <span class="badge bg-secondary">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'scanner:domain_detail' domain.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{% url 'scanner:domain_edit' domain.id %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'scanner:check_ssl' domain.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-shield-alt"></i> Check SSL
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No domains found.</p>
+            <a href="{% url 'scanner:domain_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Domain
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

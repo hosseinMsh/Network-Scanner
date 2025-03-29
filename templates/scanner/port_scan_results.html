@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Port Scan Results - {{ port_scan.server.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Port Scan Results</h1>
+        <a href="{% url 'scanner:server_detail' port_scan.server.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Server
+        </a>
+    </div>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Scan Information</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Server:</strong> {{ port_scan.server.name }}</p>
+                    <p><strong>IP Address:</strong> {{ port_scan.server.ip_address }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Scan Date:</strong> {{ port_scan.scan_date }}</p>
+                    <p><strong>Port Range:</strong> {{ port_scan.port_range }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Open Ports -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Open Ports</h6>
+                </div>
+                <div class="card-body">
+                    {% if open_ports %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Port</th>
+                                    <th>Protocol</th>
+                                    <th>Service</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in open_ports %}
+                                <tr>
+                                    <td>{{ result.port_number }}</td>
+                                    <td>{{ result.protocol }}</td>
+                                    <td>{{ result.service|default:"Unknown" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No open ports found.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- All Ports -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">All Scanned Ports</h6>
+                </div>
+                <div class="card-body">
+                    {% if results %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Port</th>
+                                    <th>Protocol</th>
+                                    <th>Status</th>
+                                    <th>Service</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr class="{% if result.status == 'open' %}table-success{% endif %}">
+                                    <td>{{ result.port_number }}</td>
+                                    <td>{{ result.protocol }}</td>
+                                    <td>{{ result.status }}</td>
+                                    <td>{{ result.service|default:"" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        No port scan results found.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Security Recommendations</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <h5 class="alert-heading">Security Considerations</h5>
+                <p>Based on the scan results, consider the following security recommendations:</p>
+                <ul>
+                    {% if open_ports %}
+                    <li>Review all open ports and ensure they are necessary for your operations.</li>
+                    <li>Configure firewalls to restrict access to essential ports only.</li>
+                    <li>Ensure services running on open ports are up-to-date and properly configured.</li>
+                    {% else %}
+                    <li>No open ports were found, which could indicate strong firewall rules or the server might be behind a firewall.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'scanner:scan_ports' port_scan.server.id %}" class="btn btn-primary">
+            <i class="fas fa-redo"></i> Run Another Scan
+        </a>
+        <a href="{% url 'reports:generate_server_report' port_scan.server.id %}" class="btn btn-success">
+            <i class="fas fa-file-alt"></i> Generate Server Report
+        </a>
+    </div>
+</div>
+{% endblock %}
+

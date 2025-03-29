@@ -1,0 +1,408 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}Dashboard - PingHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0">Dashboard</h1>
+      <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" id="refreshDashboard">
+              <i class="fas fa-sync-alt me-2"></i> Refresh
+          </button>
+          <div class="dropdown">
+              <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-plus me-2"></i> Add New
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                  <li><a class="dropdown-item" href="{% url 'scanner:network_create' %}">Network</a></li>
+                  <li><a class="dropdown-item" href="{% url 'scanner:server_create' %}">Server</a></li>
+                  <li><a class="dropdown-item" href="{% url 'scanner:domain_create' %}">Domain</a></li>
+                  <li><a class="dropdown-item" href="{% url 'scanner:application_create' %}">Application</a></li>
+              </ul>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+      <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card bg-white h-100">
+              <div class="d-flex justify-content-between">
+                  <div>
+                      <h5 class="text-muted mb-2">Networks</h5>
+                      <h2 class="mb-0">{{ networks_count }}</h2>
+                  </div>
+                  <div class="icon text-primary">
+                      <i class="fas fa-network-wired"></i>
+                  </div>
+              </div>
+              <div class="mt-3">
+                  <a href="{% url 'scanner:network_list' %}" class="text-decoration-none">View all networks <i class="fas fa-arrow-right ms-1"></i></a>
+              </div>
+          </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card bg-white h-100">
+              <div class="d-flex justify-content-between">
+                  <div>
+                      <h5 class="text-muted mb-2">Servers</h5>
+                      <h2 class="mb-0">{{ servers_count }}</h2>
+                  </div>
+                  <div class="icon text-success">
+                      <i class="fas fa-server"></i>
+                  </div>
+              </div>
+              <div class="mt-3">
+                  <a href="{% url 'scanner:server_list' %}" class="text-decoration-none">View all servers <i class="fas fa-arrow-right ms-1"></i></a>
+              </div>
+          </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card bg-white h-100">
+              <div class="d-flex justify-content-between">
+                  <div>
+                      <h5 class="text-muted mb-2">Domains</h5>
+                      <h2 class="mb-0">{{ domains_count }}</h2>
+                  </div>
+                  <div class="icon text-info">
+                      <i class="fas fa-globe"></i>
+                  </div>
+              </div>
+              <div class="mt-3">
+                  <a href="{% url 'scanner:domain_list' %}" class="text-decoration-none">View all domains <i class="fas fa-arrow-right ms-1"></i></a>
+              </div>
+          </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card bg-white h-100">
+              <div class="d-flex justify-content-between">
+                  <div>
+                      <h5 class="text-muted mb-2">Applications</h5>
+                      <h2 class="mb-0">{{ applications_count }}</h2>
+                  </div>
+                  <div class="icon text-warning">
+                      <i class="fas fa-code"></i>
+                  </div>
+              </div>
+              <div class="mt-3">
+                  <a href="{% url 'scanner:application_list' %}" class="text-decoration-none">View all applications <i class="fas fa-arrow-right ms-1"></i></a>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row mb-4">
+      <!-- Vulnerability Chart -->
+      <div class="col-xl-6 col-lg-6 mb-4">
+          <div class="card h-100">
+              <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                  <h6 class="m-0 fw-bold">Vulnerabilities by Severity</h6>
+                  <button class="btn btn-sm btn-outline-secondary">
+                      <i class="fas fa-download"></i>
+                  </button>
+              </div>
+              <div class="card-body">
+                  <div class="chart-container" style="position: relative; height:250px;">
+                      <canvas id="vulnerabilityChart"></canvas>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- OS Distribution Chart -->
+      <div class="col-xl-6 col-lg-6 mb-4">
+          <div class="card h-100">
+              <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                  <h6 class="m-0 fw-bold">Servers by Operating System</h6>
+                  <button class="btn btn-sm btn-outline-secondary">
+                      <i class="fas fa-download"></i>
+                  </button>
+              </div>
+              <div class="card-body">
+                  <div class="chart-container" style="position: relative; height:250px;">
+                      <canvas id="osChart"></canvas>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Content Row -->
+  <div class="row">
+      <!-- Vulnerable Servers -->
+      <div class="col-lg-6 mb-4">
+          <div class="card h-100">
+              <div class="card-header py-3">
+                  <h6 class="m-0 fw-bold">Vulnerable Servers</h6>
+              </div>
+              <div class="card-body">
+                  {% if vulnerable_servers %}
+                  <div class="table-responsive">
+                      <table class="table table-hover">
+                          <thead>
+                              <tr>
+                                  <th>Server</th>
+                                  <th>IP Address</th>
+                                  <th>Vulnerabilities</th>
+                                  <th>Actions</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for server in vulnerable_servers %}
+                              <tr>
+                                  <td>{{ server.name }}</td>
+                                  <td>{{ server.ip_address }}</td>
+                                  <td>
+                                      <span class="badge bg-danger">{{ server.vuln_count }}</span>
+                                  </td>
+                                  <td>
+                                      <a href="{% url 'scanner:server_detail' server.id %}" class="btn btn-sm btn-primary">View</a>
+                                  </td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+                  {% else %}
+                  <div class="text-center py-4">
+                      <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                      <p>No vulnerable servers found. Your network is secure!</p>
+                  </div>
+                  {% endif %}
+              </div>
+          </div>
+      </div>
+
+      <!-- Expiring SSL Certificates -->
+      <div class="col-lg-6 mb-4">
+          <div class="card h-100">
+              <div class="card-header py-3">
+                  <h6 class="m-0 fw-bold">Expiring SSL Certificates</h6>
+              </div>
+              <div class="card-body">
+                  {% if expiring_certs %}
+                  <div class="table-responsive">
+                      <table class="table table-hover">
+                          <thead>
+                              <tr>
+                                  <th>Domain</th>
+                                  <th>Issuer</th>
+                                  <th>Expires</th>
+                                  <th>Days Left</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for cert in expiring_certs %}
+                              <tr>
+                                  <td>{{ cert.domain.name }}</td>
+                                  <td>{{ cert.issuer }}</td>
+                                  <td>{{ cert.valid_until|date:"Y-m-d" }}</td>
+                                  <td>
+                                      {% if cert.days_until_expiry <= 7 %}
+                                      <span class="badge bg-danger">{{ cert.days_until_expiry }}</span>
+                                      {% elif cert.days_until_expiry <= 30 %}
+                                      <span class="badge bg-warning">{{ cert.days_until_expiry }}</span>
+                                      {% else %}
+                                      <span class="badge bg-success">{{ cert.days_until_expiry }}</span>
+                                      {% endif %}
+                                  </td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+                  {% else %}
+                  <div class="text-center py-4">
+                      <i class="fas fa-certificate fa-3x text-success mb-3"></i>
+                      <p>No expiring SSL certificates found. All certificates are valid!</p>
+                  </div>
+                  {% endif %}
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Recent Scans -->
+  <div class="row">
+      <div class="col-lg-12 mb-4">
+          <div class="card">
+              <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                  <h6 class="m-0 fw-bold">Recent Port Scans</h6>
+                  <a href="{% url 'scanner:server_list' %}" class="btn btn-sm btn-primary">
+                      <i class="fas fa-search me-1"></i> New Scan
+                  </a>
+              </div>
+              <div class="card-body">
+                  {% if recent_port_scans %}
+                  <div class="table-responsive">
+                      <table class="table table-hover">
+                          <thead>
+                              <tr>
+                                  <th>Server</th>
+                                  <th>IP Address</th>
+                                  <th>Scan Date</th>
+                                  <th>Port Range</th>
+                                  <th>Actions</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for scan in recent_port_scans %}
+                              <tr>
+                                  <td>{{ scan.server.name }}</td>
+                                  <td>{{ scan.server.ip_address }}</td>
+                                  <td>{{ scan.scan_date|date:"Y-m-d H:i" }}</td>
+                                  <td>{{ scan.port_range }}</td>
+                                  <td>
+                                      <a href="{% url 'scanner:port_scan_results' scan.id %}" class="btn btn-sm btn-primary">View Results</a>
+                                  </td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+                  {% else %}
+                  <div class="text-center py-4">
+                      <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                      <p>No recent port scans found. Start scanning your servers to monitor for open ports.</p>
+                      <a href="{% url 'scanner:server_list' %}" class="btn btn-primary mt-2">
+                          <i class="fas fa-search me-1"></i> Start Scanning
+                      </a>
+                  </div>
+                  {% endif %}
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Vulnerability Chart
+  var vulnCtx = document.getElementById('vulnerabilityChart').getContext('2d');
+  var vulnChart = new Chart(vulnCtx, {
+      type: 'doughnut',
+      data: {
+          labels: {{ vulnerability_data.labels|safe }},
+          datasets: [{
+              data: {{ vulnerability_data.data|safe }},
+              backgroundColor: [
+                  '#ef4444', // Critical - Red
+                  '#f59e0b', // High - Yellow
+                  '#6366f1', // Medium - Blue
+                  '#3b82f6', // Low - Cyan
+                  '#10b981'  // Info - Green
+              ],
+              borderWidth: 0,
+          }],
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: {
+                  position: 'right',
+                  labels: {
+                      usePointStyle: true,
+                      padding: 20,
+                      font: {
+                          size: 12
+                      }
+                  }
+              },
+              tooltip: {
+                  backgroundColor: 'white',
+                  titleColor: '#1e293b',
+                  bodyColor: '#1e293b',
+                  borderColor: '#e2e8f0',
+                  borderWidth: 1,
+                  padding: 12,
+                  displayColors: true,
+                  usePointStyle: true,
+                  callbacks: {
+                      labelPointStyle: function(context) {
+                          return {
+                              pointStyle: 'circle',
+                              rotation: 0
+                          };
+                      }
+                  }
+              }
+          },
+          cutout: '70%',
+          animation: {
+              animateScale: true
+          }
+      },
+  });
+
+  // OS Chart
+  var osCtx = document.getElementById('osChart').getContext('2d');
+  var osChart = new Chart(osCtx, {
+      type: 'bar',
+      data: {
+          labels: {{ os_data.labels|safe }},
+          datasets: [{
+              data: {{ os_data.data|safe }},
+              backgroundColor: [
+                  '#6366f1', // Blue
+                  '#10b981', // Green
+                  '#3b82f6', // Cyan
+                  '#f59e0b', // Yellow
+                  '#ef4444', // Red
+                  '#64748b'  // Gray
+              ],
+              borderWidth: 0,
+              borderRadius: 4,
+          }],
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: {
+                  display: false,
+              },
+              tooltip: {
+                  backgroundColor: 'white',
+                  titleColor: '#1e293b',
+                  bodyColor: '#1e293b',
+                  borderColor: '#e2e8f0',
+                  borderWidth: 1,
+                  padding: 12,
+              }
+          },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  grid: {
+                      display: true,
+                      drawBorder: false,
+                  },
+              },
+              x: {
+                  grid: {
+                      display: false,
+                      drawBorder: false,
+                  },
+              }
+          },
+          animation: {
+              animateScale: true
+          }
+      },
+  });
+
+  // Refresh dashboard
+  document.getElementById('refreshDashboard').addEventListener('click', function() {
+      location.reload();
+  });
+</script>
+{% endblock %}
+

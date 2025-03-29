@@ -1,0 +1,106 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}Networks{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Networks</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Networks</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="header-title">Network List</h4>
+                        <a href="{% url 'network_create' %}" class="btn btn-primary">
+                            <i class="mdi mdi-plus-circle me-1"></i> Add Network
+                        </a>
+                    </div>
+
+                    {% if messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+
+                    <div class="table-responsive">
+                        <table class="table table-centered table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>CIDR</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Servers</th>
+                                    <th>Last Scanned</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for network in networks %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'network_detail' network.id %}">{{ network.name }}</a>
+                                    </td>
+                                    <td>{{ network.cidr }}</td>
+                                    <td>{{ network.description|truncatechars:50 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if network.status == 'active' %}success{% elif network.status == 'inactive' %}warning{% else %}danger{% endif %}">
+                                            {{ network.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ network.servers.count }}</td>
+                                    <td>{{ network.last_scanned|default:"Never" }}</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="mdi mdi-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{% url 'network_detail' network.id %}">View Details</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'network_update' network.id %}">Edit</a></li>
+                                                <li><a class="dropdown-item text-danger" href="{% url 'network_delete' network.id %}">Delete</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="avatar-lg mx-auto mb-4">
+                                            <i class="mdi mdi-lan font-24 avatar-title bg-light-subtle text-primary rounded-circle"></i>
+                                        </div>
+                                        <h4>No Networks Found</h4>
+                                        <p class="text-muted">Get started by adding your first network.</p>
+                                        <a href="{% url 'network_create' %}" class="btn btn-primary mt-2">
+                                            <i class="mdi mdi-plus-circle me-1"></i> Add Network
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

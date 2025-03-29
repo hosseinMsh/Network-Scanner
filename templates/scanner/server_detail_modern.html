@@ -1,0 +1,414 @@
+{% extends 'base_modern.html' %}
+
+{% block title %}Server: {{ server.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Server: {{ server.name }}</h1>
+        <div>
+            <a href="{% url 'scanner:server_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Servers
+            </a>
+            <a href="{% url 'scanner:server_edit' server.id %}" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i> Edit
+            </a>
+        </div>
+    </div>
+    
+    <!-- Server Status Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-1">{{ server.name }}</h4>
+                    <p class="text-muted mb-0">
+                        IP: {{ server.ip_address }} | Network: <a href="{% url 'scanner:network_detail' server.network.id %}">{{ server.network.name }}</a>
+                    </p>
+                </div>
+                <div class="col-md-3 text-md-center">
+                    <div class="mb-2 mb-md-0">
+                        <span class="text-muted d-block mb-1">Last Scanned</span>
+                        <span class="fw-medium">{{ server.last_scanned|default:"Never" }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <a href="{% url 'scanner:scan_ports' server.id %}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i> Scan Ports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Server Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Server Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">Hostname</span>
+                                <span class="fw-medium">{{ server.hostname|default:"Not specified" }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">IP Address</span>
+                                <span class="fw-medium">{{ server.ip_address }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">Network</span>
+                                <span class="fw-medium">{{ server.network.name }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">Operating System</span>
+                                <span class="fw-medium">{{ server.operating_system|default:"Unknown" }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">OS Version</span>
+                                <span class="fw-medium">{{ server.os_version|default:"Unknown" }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">Created By</span>
+                                <span class="fw-medium">{{ server.created_by.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Server Specifications -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Server Specifications</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">CPU Cores</span>
+                                <span class="fw-medium">{{ server.cpu_cores|default:"Unknown" }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">RAM</span>
+                                <span class="fw-medium">{{ server.ram_gb|default:"Unknown" }} GB</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">Disk Space</span>
+                                <span class="fw-medium">{{ server.disk_space_gb|default:"Unknown" }} GB</span>
+                            </div>
+                            {% if server.gpu %}
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">GPU</span>
+                                <span class="fw-medium">{{ server.gpu }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">Legal Representative</span>
+                                <span class="fw-medium">
+                                    {% if server.legal_representative %}
+                                    {{ server.legal_representative.name }}
+                                    {% else %}
+                                    Not specified
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted d-block mb-1">Technical Representative</span>
+                                <span class="fw-medium">
+                                    {% if server.technical_representative %}
+                                    {{ server.technical_representative.name }}
+                                    {% else %}
+                                    Not specified
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2 justify-content-between">
+                        <a href="{% url 'scanner:scan_ports' server.id %}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i> Scan Ports
+                        </a>
+                        <a href="{% url 'scanner:domain_create' %}?server={{ server.id }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i> Add Domain
+                        </a>
+                        <a href="{% url 'scanner:application_create' %}?server={{ server.id }}" class="btn btn-info">
+                            <i class="fas fa-plus me-2"></i> Add Application
+                        </a>
+                        <a href="{% url 'reports:generate_server_report' server.id %}" class="btn btn-warning">
+                            <i class="fas fa-file-alt me-2"></i> Generate Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Domains -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Domains</h5>
+            <a href="{% url 'scanner:domain_create' %}?server={{ server.id }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus me-1"></i> Add Domain
+            </a>
+        </div>
+        <div class="card-body">
+            {% if domains %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Technical Representative</th>
+                            <th>SSL Status</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for domain in domains %}
+                        <tr>
+                            <td>{{ domain.name }}</td>
+                            <td>
+                                {% if domain.technical_representative %}
+                                {{ domain.technical_representative.name }}
+                                {% else %}
+                                Not specified
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if domain.ssl_certificates.exists %}
+                                {% with cert=domain.ssl_certificates.first %}
+                                {% if cert.is_valid %}
+                                <span class="badge bg-success">Valid</span>
+                                {% else %}
+                                <span class="badge bg-danger">Invalid</span>
+                                {% endif %}
+                                {% endwith %}
+                                {% else %}
+                                <span class="badge bg-secondary">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ domain.status }}">{{ domain.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                        <li><a class="dropdown-item" href="{% url 'scanner:domain_detail' domain.id %}">
+                                            <i class="fas fa-eye me-2"></i> View
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'scanner:domain_edit' domain.id %}">
+                                            <i class="fas fa-edit me-2"></i> Edit
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'scanner:check_ssl' domain.id %}">
+                                            <i class="fas fa-shield-alt me-2"></i> Check SSL
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'scanner:scan_domain' domain.id %}">
+                                            <i class="fas fa-sync-alt me-2"></i> Scan Domain
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p>No domains found for this server.</p>
+                <a href="{% url 'scanner:domain_create' %}?server={{ server.id }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add Domain
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Applications -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Applications</h5>
+            <a href="{% url 'scanner:application_create' %}?server={{ server.id }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus me-1"></i> Add Application
+            </a>
+        </div>
+        <div class="card-body">
+            {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Technology Type</th>
+                            <th>Version</th>
+                            <th>Domain</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>{{ app.name }}</td>
+                            <td>{{ app.get_technology_type_display }}</td>
+                            <td>{{ app.version|default:"Unknown" }}</td>
+                            <td>
+                                {% if app.domain %}
+                                <a href="{% url 'scanner:domain_detail' app.domain.id %}">{{ app.domain.name }}</a>
+                                {% else %}
+                                Not specified
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'scanner:application_detail' app.id %}" class="btn btn-sm btn-primary">View</a>
+                                <a href="{% url 'scanner:application_edit' app.id %}" class="btn btn-sm btn-info">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p>No applications found for this server.</p>
+                <a href="{% url 'scanner:application_create' %}?server={{ server.id }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add Application
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Vulnerabilities -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Vulnerabilities</h5>
+            <a href="{% url 'scanner:vulnerability_create' %}?server={{ server.id }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus me-1"></i> Add Vulnerability
+            </a>
+        </div>
+        <div class="card-body">
+            {% if vulnerabilities %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Severity</th>
+                            <th>CVE ID</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vuln in vulnerabilities %}
+                        <tr>
+                            <td>{{ vuln.title }}</td>
+                            <td>
+                                {% if vuln.severity == 'critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                                {% elif vuln.severity == 'high' %}
+                                <span class="badge bg-warning text-dark">High</span>
+                                {% elif vuln.severity == 'medium' %}
+                                <span class="badge bg-primary">Medium</span>
+                                {% elif vuln.severity == 'low' %}
+                                <span class="badge bg-info">Low</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Info</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ vuln.cve_id|default:"N/A" }}</td>
+                            <td>
+                                {% if vuln.is_fixed %}
+                                <span class="badge bg-success">Fixed</span>
+                                {% else %}
+                                <span class="badge bg-danger">Open</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'scanner:vulnerability_detail' vuln.id %}" class="btn btn-sm btn-primary">View</a>
+                                <a href="{% url 'scanner:vulnerability_edit' vuln.id %}" class="btn btn-sm btn-info">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p>No vulnerabilities found for this server.</p>
+                <a href="{% url 'scanner:vulnerability_create' %}?server={{ server.id }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add Vulnerability
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Port Scans -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <h5 class="mb-0">Recent Port Scans</h5>
+        </div>
+        <div class="card-body">
+            {% if port_scans %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Port Range</th>
+                            <th>Performed By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in port_scans %}
+                        <tr>
+                            <td>{{ scan.scan_date }}</td>
+                            <td>{{ scan.port_range }}</td>
+                            <td>{{ scan.created_by.username }}</td>
+                            <td>
+                                <a href="{% url 'scanner:port_scan_results' scan.id %}" class="btn btn-sm btn-primary">View Results</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p>No port scans found for this server.</p>
+                <a href="{% url 'scanner:scan_ports' server.id %}" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i> Scan Ports
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

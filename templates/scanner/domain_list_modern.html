@@ -1,0 +1,179 @@
+{% extends 'base_modern.html' %}
+
+{% block title %}Domains - PingHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Domains</h1>
+        <a href="{% url 'scanner:domain_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Add Domain
+        </a>
+    </div>
+    
+    <!-- Filters and Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="domainSearch" placeholder="Search domains...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="expiring">Expiring Soon</option>
+                        <option value="issues">With Issues</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="serverFilter">
+                        <option value="">All Servers</option>
+                        {% for server in servers %}
+                        <option value="{{ server.id }}">{{ server.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                        <i class="fas fa-undo me-1"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Domains Table -->
+    <div class="card shadow">
+        <div class="card-body">
+            {% if domains %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="domainsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Server</th>
+                            <th>Registrar</th>
+                            <th>Expiration Date</th>
+                            <th>SSL Status</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for domain in domains %}
+                        <tr>
+                            <td>{{ domain.name }}</td>
+                            <td><a href="{% url 'scanner:server_detail' domain.server.id %}">{{ domain.server.name }}</a></td>
+                            <td>{{ domain.registrar|default:"Unknown" }}</td>
+                            <td>{{ domain.expiration_date|default:"Unknown" }}</td>
+                            <td>
+                                {% if domain.ssl_certificates.exists %}
+                                {% with cert=domain.ssl_certificates.first %}
+                                {% if cert.is_valid %}
+                                <span class="badge bg-success">Valid</span>
+                                {% else %}
+                                <span class="badge bg-danger">Invalid</span>
+                                {% endif %}
+                                {% endwith %}
+                                {% else %}
+                                <span class="badge bg-secondary">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ domain.status }}">{{ domain.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                        <li><a class="dropdown-item" href="{% url 'scanner:domain_detail' domain.id %}">
+                                            <i class="fas fa-eye me-2"></i> View
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'scanner:domain_edit' domain.id %}">
+                                            <i class="fas fa-edit me-2"></i> Edit
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'scanner:check_ssl' domain.id %}">
+                                            <i class="fas fa-shield-alt me-2"></i> Check SSL
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'scanner:scan_domain' domain.id %}">
+                                            <i class="fas fa-sync-alt me-2"></i> Scan Domain
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-globe fa-4x text-muted"></i>
+                </div>
+                <h4>No Domains Found</h4>
+                <p class="text-muted mb-4">You haven't added any domains yet.</p>
+                <a href="{% url 'scanner:domain_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i> Add Domain
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search and filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const domainSearch = document.getElementById('domainSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        const serverFilter = document.getElementById('serverFilter');
+        const resetFilters = document.getElementById('resetFilters');
+        const table = document.getElementById('domainsTable');
+        
+        if (!table) return; // Exit if no table exists
+        
+        const rows = table.querySelectorAll('tbody tr');
+        
+        function filterTable() {
+            const searchTerm = domainSearch.value.toLowerCase();
+            const statusValue = statusFilter.value.toLowerCase();
+            const serverValue = serverFilter.value;
+            
+            rows.forEach(row => {
+                const domainName = row.cells[0].textContent.toLowerCase();
+                const serverName = row.cells[1].textContent.toLowerCase();
+                const serverId = row.cells[1].querySelector('a').getAttribute('href').split('/').filter(Boolean).pop();
+                const statusText = row.cells[5].textContent.toLowerCase();
+                
+                const matchesSearch = domainName.includes(searchTerm);
+                const matchesStatus = statusValue === '' || statusText.includes(statusValue);
+                const matchesServer = serverValue === '' || serverId === serverValue;
+                
+                row.style.display = matchesSearch && matchesStatus && matchesServer ? '' : 'none';
+            });
+        }
+        
+        domainSearch.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+        serverFilter.addEventListener('change', filterTable);
+        
+        resetFilters.addEventListener('click', function() {
+            domainSearch.value = '';
+            statusFilter.value = '';
+            serverFilter.value = '';
+            rows.forEach(row => row.style.display = '');
+        });
+    });
+</script>
+{% endblock %}
+

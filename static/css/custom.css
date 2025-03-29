@@ -1,0 +1,303 @@
+:root {
+  --primary-color: #4776e6;
+  --primary-hover: #3a67d4;
+  --primary-gradient: linear-gradient(135deg, #4776e6, #8e54e9);
+  --primary-gradient-hover: linear-gradient(135deg, #3a67d4, #7e46d4);
+  --secondary-color: #8e54e9;
+  --secondary-hover: #7e46d4;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+  --light-color: #f8f9fa;
+  --dark-color: #1e293b;
+  --gray-color: #6c757d;
+  --body-bg: #f1f5f9;
+  --card-bg: #ffffff;
+  --text-color: #333333;
+  --text-muted: #6c757d;
+  --border-color: #e2e8f0;
+}
+
+body {
+  font-family: "Segoe UI", Inter, Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--body-bg);
+  color: var(--text-color);
+}
+
+/* Navbar styling */
+.navbar {
+  background: var(--primary-gradient);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: white !important;
+}
+
+.navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  color: white !important;
+  transform: translateY(-2px);
+}
+
+/* Sidebar styling */
+.sidebar {
+  background-color: var(--card-bg);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar .nav-link {
+  color: var(--text-color);
+  border-radius: 8px;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(71, 118, 230, 0.1);
+  color: var(--primary-color);
+}
+
+.sidebar .nav-link.active {
+  background-color: rgba(71, 118, 230, 0.15);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.sidebar .nav-link i {
+  color: var(--primary-color);
+  margin-right: 10px;
+}
+
+/* Card styling */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  padding: 15px 20px;
+}
+
+/* Button styling */
+.btn-primary {
+  background: var(--primary-gradient);
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--primary-gradient-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(71, 118, 230, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(142, 84, 233, 0.3);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #0ea271;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+  background-color: #dc3545;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-warning {
+  background-color: var(--warning-color);
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-warning:hover {
+  background-color: #e09c0b;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
+.btn-info {
+  background-color: var(--info-color);
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-info:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Form controls */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 10px 15px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(71, 118, 230, 0.1);
+}
+
+/* Tables */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background-color: rgba(71, 118, 230, 0.05);
+  border-bottom: none;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(71, 118, 230, 0.05);
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.35em 0.65em;
+  border-radius: 50rem;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.status-active {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+}
+
+.status-inactive {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+}
+
+.status-expiring {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--warning-color);
+}
+
+.status-issues {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--info-color);
+}
+
+/* Stat cards */
+.stat-card {
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--card-bg);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card .icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.stat-card .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.stat-card .stat-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+

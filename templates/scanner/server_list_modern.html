@@ -1,0 +1,91 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}Servers{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Servers</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Servers</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-server me-1"></i>
+            Server List
+            <div class="float-end">
+                <a href="{% url 'scanner:server_create' %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Add Server
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if servers %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="serversTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>IP Address</th>
+                            <th>Network</th>
+                            <th>OS</th>
+                            <th>Applications</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for server in servers %}
+                        <tr>
+                            <td>{{ server.name }}</td>
+                            <td>{{ server.ip_address }}</td>
+                            <td>{{ server.network.name|default:"N/A" }}</td>
+                            <td>{{ server.operating_system|default:"Unknown" }}</td>
+                            <td>{{ server.application_set.count }}</td>
+                            <td>
+                                {% if server.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'scanner:server_detail' server.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'scanner:server_update' server.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'scanner:server_delete' server.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No servers found. Click "Add Server" to create your first server.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#serversTable').DataTable({
+            responsive: true
+        });
+    });
+</script>
+{% endblock %}
+

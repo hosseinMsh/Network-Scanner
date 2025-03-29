@@ -1,0 +1,210 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}Network Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Network Details</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scanner:network_list' %}">Networks</a></li>
+        <li class="breadcrumb-item active">{{ network.name }}</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-network-wired me-1"></i>
+                    Network Information
+                    <div class="float-end">
+                        <a href="{% url 'scanner:network_update' network.id %}" class="btn btn-sm btn-primary me-2">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'scanner:network_delete' network.id %}" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ network.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>CIDR</th>
+                                    <td>{{ network.cidr }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Description</th>
+                                    <td>{{ network.description|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>
+                                        {% if network.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td>{{ network.created_at }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated</th>
+                                    <td>{{ network.updated_at }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Network Statistics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bg-primary text-white h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="me-3">
+                                                            <div class="text-white-75">Servers</div>
+                                                            <div class="text-lg fw-bold">{{ network.server_set.count }}</div>
+                                                        </div>
+                                                        <i class="fas fa-server fa-2x"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bg-success text-white h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="me-3">
+                                                            <div class="text-white-75">Active Servers</div>
+                                                            <div class="text-lg fw-bold">{{ network.server_set.filter(is_active=True).count }}</div>
+                                                        </div>
+                                                        <i class="fas fa-check-circle fa-2x"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bg-warning text-white h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="me-3">
+                                                            <div class="text-white-75">Applications</div>
+                                                            <div class="text-lg fw-bold">{{ application_count }}</div>
+                                                        </div>
+                                                        <i class="fas fa-cubes fa-2x"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bg-danger text-white h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="me-3">
+                                                            <div class="text-white-75">Vulnerabilities</div>
+                                                            <div class="text-lg fw-bold">{{ vulnerability_count }}</div>
+                                                        </div>
+                                                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-server me-1"></i>
+            Servers in this Network
+            <div class="float-end">
+                <a href="{% url 'scanner:server_create' %}?network={{ network.id }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Add Server
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if network.server_set.all %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="serversTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>IP Address</th>
+                            <th>OS</th>
+                            <th>Applications</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for server in network.server_set.all %}
+                        <tr>
+                            <td>{{ server.name }}</td>
+                            <td>{{ server.ip_address }}</td>
+                            <td>{{ server.operating_system|default:"Unknown" }}</td>
+                            <td>{{ server.application_set.count }}</td>
+                            <td>
+                                {% if server.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'scanner:server_detail' server.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'scanner:server_update' server.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'scanner:server_delete' server.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No servers found in this network. Click "Add Server" to add a server.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#serversTable').DataTable({
+            responsive: true
+        });
+    });
+</script>
+{% endblock %}
+

@@ -1,0 +1,37 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}Technology Detection - {{ domain.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Technology Detection</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scanner:domain_list' %}">Domains</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scanner:domain_detail' pk=domain.id %}">{{ domain.name }}</a></li>
+        <li class="breadcrumb-item active">Technology Detection</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-code me-1"></i>
+            Detect Technologies for {{ domain.name }}
+        </div>
+        <div class="card-body">
+            <p>This tool will scan the domain and detect technologies used by the website.</p>
+            
+            <form method="post" action="{% url 'scanner:detect_technologies' domain_id=domain.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i> Start Detection
+                </button>
+                <a href="{% url 'scanner:domain_detail' pk=domain.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Domain
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
