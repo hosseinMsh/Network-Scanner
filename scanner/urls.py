@@ -22,13 +22,19 @@ urlpatterns = [
     path('domains/<int:pk>/', views.domain_detail, name='domain_detail'),
     path('domains/create/', views.domain_create, name='domain_create'),
     path('domains/<int:pk>/edit/', views.domain_edit, name='domain_edit'),
+    path('domains/<int:domain_id>/report/', views.domain_report_view, name='domain_report'),  # Ensure this name matches
+
     path('domains/<int:domain_id>/check-ssl/', views.check_ssl, name='check_ssl'),
     path('domains/<int:domain_id>/scan/', views.scan_domain, name='scan_domain'),
     
     # Technology detection URLs
     path('domains/<int:domain_id>/detect-technologies/', views.detect_technologies, name='detect_technologies'),
     path('domains/<int:domain_id>/technology-detection-results/', views.technology_detection_results, name='technology_detection_results'),
-    
+    path('domains/<int:domain_id>/detect/', views.detect_technologies, name='detect_domain_technology'),
+    # Ensure this name matches
+    path('domains/<int:domain_id>/update/', views.domain_edit, name='domain_update'),  # Ensure this name matches
+    path('domains/<int:domain_id>/delete/', views.domain_delete, name='domain_delete'),  # Ensure this name matches
+
     # Application URLs
     path('applications/', views.application_list, name='application_list'),
     path('applications/<int:pk>/', views.application_detail, name='application_detail'),
@@ -40,7 +46,7 @@ urlpatterns = [
     path('vulnerabilities/<int:pk>/', views.vulnerability_detail, name='vulnerability_detail'),
     path('vulnerabilities/create/', views.vulnerability_create, name='vulnerability_create'),
     path('vulnerabilities/<int:pk>/edit/', views.vulnerability_edit, name='vulnerability_edit'),
-    
+
     # Port scan results
     path('port-scan-results/<int:scan_id>/', views.port_scan_results, name='port_scan_results'),
     

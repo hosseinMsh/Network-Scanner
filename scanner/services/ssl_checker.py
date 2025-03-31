@@ -90,6 +90,10 @@ def check_ssl_info(domain_name):
         valid_from = datetime.datetime.strptime(ssl_info['notBefore'], '%b %d %H:%M:%S %Y %Z')
         valid_until = datetime.datetime.strptime(ssl_info['notAfter'], '%b %d %H:%M:%S %Y %Z')
         
+        # Make valid_from and valid_until timezone-aware
+        valid_from = timezone.make_aware(valid_from, timezone.get_current_timezone())
+        valid_until = timezone.make_aware(valid_until, timezone.get_current_timezone())
+
         return {
             'has_ssl': True,
             'issuer': issuer_name,

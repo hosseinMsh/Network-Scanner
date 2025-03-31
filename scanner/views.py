@@ -233,7 +233,88 @@ def domain_detail(request, pk):
         'domain_reports': domain_reports
     }
     return render(request, 'scanner/domain_detail_modern.html', context)
+@login_required
+def domain_report_view(request, domain_id):
+    """View for displaying the domain report"""
+    domain = get_object_or_404(Domain, pk=domain_id)
+    domain_reports = domain.domain_reports.all()  # Assuming you have a related name for domain reports
 
+    context = {
+        'domain': domain,
+        'domain_reports': domain_reports
+    }
+    return render(request, 'scanner/domain_report.html', context)  # Ensure the template exists
+
+
+@login_required
+def domain_edit(request, pk):
+    """View for editing a domain"""
+    domain = get_object_or_404(Domain, pk=pk)
+
+    # Check if user has permission to edit this domain
+    if not request.user.is_superuser and domain.server.created_by != request.user:
+        messages.error(request, "You don't have permission to edit this domain.")
+        return redirect('scanner:domain_list')
+
+    if request.method == 'POST':
+        form = DomainForm(request.POST, instance=domain)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Domain '{domain.name}' updated successfully.")
+            return redirect('scanner:domain_detail', pk=domain.pk)
+    else:
+        form = DomainForm(instance=domain)
+
+    context = {
+        'form': form,
+        'title': f'Edit Domain: {domain.name}',
+        'domain': domain
+    }
+    return render(request, 'scanner/domain_form_modern.html', context)
+
+
+@login_required
+def domain_delete(request, pk):
+    """View for deleting a domain"""
+    domain = get_object_or_404(Domain, pk=pk)
+
+    # Check if user has permission to delete this domain
+    if not request.user.is_superuser and domain.server.created_by != request.user:
+        messages.error(request, "You don't have permission to delete this domain.")
+        return redirect('scanner:domain_list')
+
+    if request.method == 'POST':
+        domain.delete()
+        messages.success(request, f"Domain '{domain.name}' deleted successfully.")
+        return redirect('scanner:domain_list')
+
+    context = {
+        'domain': domain
+    }
+    return render(request, 'scanner/domain_confirm_delete.html', context)  # Ensure the template exists
+@login_required
+def detect_technologies(request, domain_id):
+    """Detect technologies used by a domain"""
+    domain = get_object_or_404(Domain, id=domain_id)
+
+    if request.method == 'POST':
+        # Perform technology detection
+        detector = TechnologyDetector()
+        tech_data = detector.detect_technologies(domain.name)
+
+        # Save technology data to domain
+        domain.tech_data = tech_data
+        domain.last_scanned = timezone.now()
+        domain.save()
+
+        messages.success(request, f"Technology detection completed for {domain.name}")
+
+        # Redirect to technology detection results page
+        return redirect('scanner:technology_detection_results', domain_id=domain.id)
+
+    return render(request, 'scanner/technology_detection.html', {
+        'domain': domain,
+    })
 @login_required
 def domain_create(request):
     """View for creating a domain"""
@@ -657,14 +738,14 @@ def scan_domain(request, domain_id):
                 'is_valid': True
             }
         )
-    
+
     # Get IP addresses
     ipv4 = retrieve_ipv4_from_domain(domain.name)
     ipv6 = retrieve_ipv6_from_domain(domain.name)
     
     # Detect technologies
     technologies = detect_technologies(domain.name)
-    
+
     # Create domain report
     DomainReport.objects.create(
         domain=domain,
